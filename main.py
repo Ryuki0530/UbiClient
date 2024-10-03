@@ -27,14 +27,24 @@ def main():
 
     running = True
     
-    #以下メインループ
     while running:
+        #以下メインループ
+
+        #映像取得と描画
         ret, frame = cam.read()
+        
+        frame_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+        frame_rgb = cv2.transpose(frame_rgb)
+        frame_surface = pygame.surfarray.make_surface(frame_rgb)
+        
+        window.blit(frame_surface, (0, 0))
+        pygame.display.update()
+        #メインループ終了
+
         
     cam.release()
     pygame.quit()
-    #メインループ終了
-
+    
 if __name__ == "__main__":
     main()
 
