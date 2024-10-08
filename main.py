@@ -12,12 +12,12 @@ BACKEND_API ='http://localhost/UbiquitousCore/ubiCoreMain.php'
 #コード読み取り重複防止用の待機時間
 INTERVAL = 5
 
+
+session = requests.Session()
+
 #カメラの宣言と初期化
 def initializeCamera():
-    print("Initializing camera")
-    print(".")
-    print(".")
-    print(".")
+    print("Initializing camera...")
     cam = cv2.VideoCapture(0)
     return cam
 
@@ -36,6 +36,18 @@ def qrScanner(frame):
         print("QR code confirmed.")
         return data
     return None
+
+#通信処理
+def makeRequest(url,data):
+    headers = {'Content-Type': 'application/x-www-form-urlencoded'}
+    try:
+        response = session.post(url, headers=headers, data=data)  # クッキーが自動で送信される
+        print("HTTPレスポンスコード",response.status_code)
+        print("レスポンス内容 :",response.text)
+        return response.text
+    except Exception as Err:
+        print(f"リクエストエラー :{Err}")
+        return None
 
 
 
@@ -61,7 +73,7 @@ def main():
         frameRgb = cv2.transpose(frameRgb)
         frameSurface = pygame.surfarray.make_surface(frameRgb)
         
-        window.blit(frameSurface, (0, 0))
+        window.blit(frameSurface, (50, 50))
         pygame.display.update()
 
 
@@ -69,8 +81,16 @@ def main():
         if currentTime - lastScanedTime >= intervalTime:
             qrData = qrScanner(currentframe)
             if qrData:
-                print(qrData)
+                makeRequest(BACKEND_API,qrData)
+                #print(qrData)
                 lastScanedTime = currentTime
+
+
+        for event in pygame.event.get():
+            if event.type == QUIT:
+                running = False
+            elif event.type == KEYDOWN and event.key == K_ESCAPE:
+                running = False
 
         
         clock.tick(30)
